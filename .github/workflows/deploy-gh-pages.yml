@@ -31,5 +31,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: dist/budget-iq-plus
+          keep_files: true
           publish_branch: gh-pages
 
