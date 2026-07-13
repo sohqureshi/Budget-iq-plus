@@ -1,0 +1,77 @@
+<main class="app-shell">
+    <header class="app-header">
+        <div>
+            <p class="eyebrow">Monthly Expense Planner</p>
+            <h1 id="activeMonth">This Month</h1>
+            <div class="header-meta">
+                <span class="status-pill total-remaining-pill" id="allMonthsRemaining">Total remaining: Rs. 0</span>
+                <span class="status-pill" id="saveStatus">Saved automatically</span>
+                <span class="status-pill" id="rowCount">0 entries</span>
+                <button class="status-pill install-button hidden" type="button" id="installAppButton">Install app</button>
+            </div>
+        </div>
+
+        <app-month-picker
+          [currentMonthKey]="currentMonthKey"
+          [monthLabels]="monthLabels"
+          [months]="months"
+          [currentYear]="currentYear"
+          [currentMonth]="currentMonth"
+          (switch)="switchMonth($event)">
+        </app-month-picker>
+    </header>
+
+    <section class="summary-strip" aria-label="Monthly summary">
+        <article class="metric">
+            <p class="metric-label">Income</p>
+            <p class="metric-value income-text" id="incomeTotal">Rs. 0</p>
+            <div class="metric-note" id="incomeCount">0 sources</div>
+        </article>
+
+        <article class="metric">
+            <p class="metric-label">Expenses</p>
+            <p class="metric-value expense-text" id="expenseTotal">Rs. 0</p>
+            <div class="metric-note" id="expenseCount">0 items</div>
+        </article>
+
+        <article class="metric">
+            <p class="metric-label">Remaining</p>
+            <p class="metric-value" id="balance">Rs. 0</p>
+            <div class="metric-note" id="balanceNote">No spending yet</div>
+        </article>
+
+        <article class="metric">
+            <p class="metric-label">Spent</p>
+            <p class="metric-value" id="spentRate">0%</p>
+            <div class="metric-note">of monthly income</div>
+        </article>
+    </section>
+
+    <section class="planner-grid">
+      <app-income-list
+        [incomes]="incomes"
+        (add)="addIncome()"
+        (remove)="removeIncome($event)"
+        (amountChange)="handleIncomeAmountChange($event)"
+        (descChange)="onDescInput()">
+      </app-income-list>
+
+      <app-expense-list
+        [expenses]="expenses"
+        (add)="addExpense()"
+        (remove)="removeExpense($event)"
+        (amountChange)="handleExpenseAmountChange($event)"
+        (descChange)="onDescInput()">
+      </app-expense-list>
+    </section>
+
+    <section class="progress-area" aria-label="Spending progress">
+        <div class="progress-head">
+            <span>Monthly spending</span>
+            <span id="progressLabel">0% used</span>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </section>
+</main>

@@ -1,0 +1,22 @@
+<section class="panel" aria-labelledby="incomeHeading">
+  <div class="panel-header">
+    <h2 class="panel-title" id="incomeHeading">Income</h2>
+<span class="section-total income-text">{{ sumIncomes() | json }}</span>
+  </div>
+  <div class="panel-body">
+    <div class="list">
+      <div class="item" *ngFor="let row of incomes; let i = index">
+        <label class="field">
+          <span>Source</span>
+          <input class="description-input" type="text" placeholder="Description" [(ngModel)]="row.desc" (ngModelChange)="descChange.emit()">
+        </label>
+        <label class="field">
+          <span>Amount</span>
+          <input class="amount-input" type="text" placeholder="Enter amount" [value]="row.amount | number:'1.0-0'" (input)="amountChange.emit({index:i,value:$event.target.value})" inputmode="numeric" autocomplete="off">
+        </label>
+        <button class="remove-btn" type="button" title="Remove row" aria-label="Remove row" (click)="remove.emit(i)">&times;</button>
+      </div>
+    </div>
+    <button class="add-btn add-income" type="button" (click)="add.emit()">Add income</button>
+  </div>
+</section>

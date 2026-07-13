@@ -1,0 +1,46 @@
+<div class="month-controls" aria-label="Month controls">
+  <button class="icon-button" type="button" (click)="prevMonth()" aria-label="Previous month" title="Previous month">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18L9 12l6-6"></path></svg>
+  </button>
+
+  <button class="month-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" (click)="openPicker()">
+    <span class="month-trigger-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M3 9h18"></path><path d="M8 2v4"></path><path d="M16 2v4"></path></svg>
+    </span>
+    <span class="month-trigger-text">
+      <span>Month</span>
+      <span id="monthPickerLabel">{{ monthLabels[(selectedMonth || currentMonth) - 1] }} {{ pickerYear }}</span>
+    </span>
+  </button>
+
+  <button class="icon-button" type="button" (click)="nextMonth()" aria-label="Next month" title="Next month">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg>
+  </button>
+
+</div>
+
+<div class="calendar-backdrop" [class.open]="open" *ngIf="open" (click)="backdropClick($event)" role="dialog" aria-modal="true">
+  <section class="calendar-sheet">
+    <div class="calendar-header">
+      <div class="calendar-title">
+        <span>Select month</span>
+        <span id="calendarTitle">{{ pickerYear }}</span>
+      </div>
+      <div class="calendar-actions">
+        <button class="calendar-icon" type="button" (click)="setPickerYear(-1)">&lsaquo;</button>
+        <button class="calendar-icon" type="button" (click)="setPickerYear(1)">&rsaquo;</button>
+      </div>
+    </div>
+    <div class="calendar-body">
+      <div class="month-grid">
+        <button class="month-option" type="button" *ngFor="let m of months; index as idx" [class.current]="pickerYear === currentYear && (idx + 1) === currentMonth" [class.selected]="pickerYear === selectedYear && (idx + 1) === selectedMonth" (click)="selectMonth(idx + 1)">
+          {{ monthLabels[idx] }}
+        </button>
+      </div>
+    </div>
+    <div class="calendar-footer">
+      <button class="calendar-link" type="button" (click)="pickerYear = currentYear; selectMonth(currentMonth)">Today</button>
+      <button class="calendar-link primary" type="button" (click)="closePicker()">Done</button>
+    </div>
+  </section>
+</div>

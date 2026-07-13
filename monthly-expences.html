@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monthly Expense Planner</title>
+<meta name="theme-color" content="#2f5d62">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Expense Planner">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/monthly-expense-192.png">
+
+<style>
+    :root {
+        --page: #f4f7f3;
+        --surface: #ffffff;
+        --surface-soft: #f8faf5;
+        --ink: #18252a;
+        --muted: #66746f;
+        --line: #dce5de;
+        --primary: #2f5d62;
+        --primary-dark: #244a52;
+        --primary-soft: #e8f1ed;
+        --income: #167a55;
+        --income-soft: #e8f6ef;
+        --expense: #b45309;
+        --expense-soft: #fff4e8;
+        --danger: #c93535;
+        --shadow: 0 16px 36px rgba(35, 54, 49, 0.10);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        background: var(--page);
+        color: var(--ink);
+        line-height: 1.45;
+    }
+
+    body.calendar-open {
+        overflow: hidden;
+    }
+
+    button,
+    input,
+    select {
+        font: inherit;
+    }
+
+    button {
+        cursor: pointer;
+    }
+
+    .app-shell {
+        width: min(1180px, calc(100% - 32px));
+        margin: 24px auto;
+    }
+
+    .app-header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 16px;
+        align-items: end;
+        padding: 22px;
+        color: var(--ink);
+        background: linear-gradient(135deg, #ffffff, #edf5ef);
+        border: 1px solid #dbe7df;
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+        margin: 0 0 8px;
+        color: var(--primary);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    h1 {
+        margin: 0;
+        font-size: clamp(1.55rem, 3.6vw, 2.35rem);
+        line-height: 1.08;
+        font-weight: 800;
+        letter-spacing: 0;
+    }
+
+    .header-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        padding: 6px 10px;
+        border: 1px solid #d5e1da;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.76);
+        color: #40514b;
+        font-size: 0.84rem;
+        white-space: nowrap;
+    }
+
+    .total-remaining-pill {
+        background: var(--primary-soft);
+        border-color: #c8dcd2;
+        color: var(--primary-dark);
+        font-weight: 850;
+    }
+
+    .total-remaining-pill.negative {
+        color: var(--danger);
+    }
+
+    .install-button {
+        border-color: #c8dcd2;
+        cursor: pointer;
+    }
+
+    .install-button:hover {
+        background: #ddebe4;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .month-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        border-radius: 8px;
+        background: #e4eee8;
+    }
+
+    .month-trigger {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 178px;
+        height: 44px;
+        border: 0;
+        border-radius: 8px;
+        padding: 5px 12px;
+        color: var(--ink);
+        background: #fff;
+        text-align: left;
+        box-shadow: 0 8px 18px rgba(35, 54, 49, 0.08);
+    }
+
+    .month-trigger-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        color: var(--primary);
+    }
+
+    .month-trigger-icon svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .month-trigger-text {
+        display: grid;
+        gap: 2px;
+    }
+
+    .month-trigger-text span:first-child {
+        color: var(--muted);
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .month-trigger-text span:last-child {
+        font-size: 0.95rem;
+        font-weight: 800;
+    }
+
+    .icon-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border: 1px solid #c8dcd2;
+        border-radius: 8px;
+        background: #fff;
+        color: var(--primary-dark);
+        padding: 0;
+    }
+
+    .icon-button svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .icon-button:hover {
+        background: #edf6f1;
+    }
+
+    .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin: 18px 0;
+    }
+
+    .metric {
+        min-height: 112px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        box-shadow: 0 8px 22px rgba(35, 54, 49, 0.06);
+    }
+
+    .metric-label {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 800;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+    }
+
+    .metric-value {
+        margin: 0;
+        font-size: clamp(1.35rem, 2.4vw, 2rem);
+        font-weight: 800;
+        line-height: 1.05;
+        overflow-wrap: anywhere;
+    }
+
+    .metric-note {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 0.9rem;
+    }
+
+    .income-text {
+        color: var(--income);
+    }
+
+    .expense-text {
+        color: var(--expense);
+    }
+
+    .negative {
+        color: var(--danger);
+    }
+
+    .planner-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        align-items: start;
+    }
+
+    .panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        box-shadow: 0 12px 26px rgba(35, 54, 49, 0.07);
+        overflow: hidden;
+    }
+
+    .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 18px;
+        border-bottom: 1px solid var(--line);
+        background: var(--surface-soft);
+    }
+
+    .panel-title {
+        margin: 0;
+        font-size: 1.08rem;
+    }
+
+    .section-total {
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .panel-body {
+        padding: 14px;
+    }
+
+    .list {
+        display: grid;
+        gap: 10px;
+    }
+
+    .item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(116px, 160px) 40px;
+        gap: 10px;
+        align-items: center;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .item:hover {
+        border-color: #b9cec4;
+        box-shadow: 0 10px 20px rgba(47, 93, 98, 0.10);
+    }
+
+    .field {
+        display: grid;
+        gap: 5px;
+        min-width: 0;
+    }
+
+    .field span {
+        color: var(--muted);
+        font-size: 0.73rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    input,
+    select {
+        width: 100%;
+        min-width: 0;
+        border: 1px solid #cfdcd4;
+        border-radius: 8px;
+        background: #fff;
+        color: var(--ink);
+    }
+
+    input {
+        height: 44px;
+        padding: 0 12px;
+    }
+
+    input:focus,
+    select:focus {
+        border-color: var(--primary);
+        outline: 3px solid rgba(47, 93, 98, 0.16);
+    }
+
+    .amount-input {
+        text-align: right;
+        font-weight: 700;
+    }
+
+    .remove-btn {
+        align-self: end;
+        width: 40px;
+        height: 44px;
+        border: 1px solid #f2c4c4;
+        border-radius: 8px;
+        background: #fff7f7;
+        color: var(--danger);
+        font-size: 1.45rem;
+        line-height: 1;
+    }
+
+    .remove-btn:hover {
+        background: #ffe9e9;
+    }
+
+    .add-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 46px;
+        margin-top: 12px;
+        border: 0;
+        border-radius: 8px;
+        color: #fff;
+        font-weight: 800;
+    }
+
+    .add-income {
+        background: var(--income);
+    }
+
+    .add-expense {
+        background: var(--expense);
+    }
+
+    .add-income:hover {
+        background: #116532;
+    }
+
+    .add-expense:hover {
+        background: #9a3412;
+    }
+
+    .progress-area {
+        margin-top: 18px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+    }
+
+    .progress-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+        color: var(--muted);
+        font-weight: 800;
+    }
+
+    .progress-track {
+        height: 14px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #e8eee9;
+    }
+
+    .progress-fill {
+        width: 0%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--income), var(--primary));
+        transition: width 0.25s ease, background 0.25s ease;
+    }
+
+    .progress-fill.over {
+        background: linear-gradient(90deg, #f97316, var(--danger));
+    }
+
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .item.swiping {
+        transition: none;
+    }
+
+    .calendar-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        display: none;
+        align-items: end;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(15, 23, 42, 0.42);
+    }
+
+    .calendar-backdrop.open {
+        display: flex;
+    }
+
+    .calendar-sheet {
+        width: min(440px, 100%);
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        box-shadow: 0 28px 70px rgba(15, 23, 42, 0.28);
+        overflow: hidden;
+    }
+
+    .calendar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px;
+        border-bottom: 1px solid var(--line);
+        background: var(--surface-soft);
+    }
+
+    .calendar-title {
+        display: grid;
+        gap: 2px;
+    }
+
+    .calendar-title span:first-child {
+        color: var(--muted);
+        font-size: 0.73rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .calendar-title span:last-child {
+        font-size: 1.25rem;
+        font-weight: 850;
+    }
+
+    .calendar-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .calendar-icon {
+        width: 40px;
+        height: 40px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--ink);
+        font-size: 1.25rem;
+        line-height: 1;
+    }
+
+    .calendar-body {
+        padding: 16px;
+    }
+
+    .month-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .month-option {
+        min-height: 56px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--ink);
+        font-weight: 800;
+    }
+
+    .month-option:hover {
+        border-color: #b8c7df;
+        background: #f8fbff;
+    }
+
+    .month-option.current {
+        border-color: var(--income);
+        background: var(--income-soft);
+        color: var(--income);
+    }
+
+    .month-option.selected {
+        border-color: var(--primary);
+        background: var(--primary);
+        color: #fff;
+    }
+
+    .calendar-footer {
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+        padding: 0 16px 16px;
+    }
+
+    .calendar-link {
+        min-height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--ink);
+        padding: 0 14px;
+        font-weight: 800;
+    }
+
+    .calendar-link.primary {
+        border-color: var(--primary);
+        background: var(--primary);
+        color: #fff;
+    }
+
+    @media (max-width: 920px) {
+        .app-header {
+            grid-template-columns: 1fr;
+            align-items: start;
+        }
+
+        .summary-strip {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .planner-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 620px) {
+        .app-shell {
+            width: min(100% - 20px, 1180px);
+            margin: 10px auto;
+        }
+
+        .app-header,
+        .metric,
+        .progress-area {
+            padding: 16px;
+        }
+
+        .eyebrow {
+            font-size: 0.7rem;
+            margin-bottom: 6px;
+        }
+
+        h1 {
+            font-size: 1.45rem;
+        }
+
+        .header-meta {
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .status-pill {
+            min-height: 30px;
+            font-size: 0.78rem;
+        }
+
+        .summary-strip {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .month-controls {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .month-trigger {
+            min-width: 0;
+            flex: 1;
+            height: 46px;
+        }
+
+        .item {
+            grid-template-columns: 1fr 44px;
+        }
+
+        .item .field:first-child {
+            grid-column: 1 / -1;
+        }
+
+        .calendar-backdrop {
+            padding: 0;
+        }
+
+        .calendar-sheet {
+            width: 100%;
+            border-right: 0;
+            border-bottom: 0;
+            border-left: 0;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .month-grid {
+            gap: 8px;
+        }
+
+        .month-option {
+            min-height: 54px;
+        }
+    }
+</style>
+</head>
+
+<body>
+<main class="app-shell">
+    <header class="app-header">
+        <div>
+            <p class="eyebrow">Monthly Expense Planner</p>
+            <h1 id="activeMonth">This Month</h1>
+            <div class="header-meta">
+                <span class="status-pill total-remaining-pill" id="allMonthsRemaining">Total remaining: Rs. 0</span>
+                <span class="status-pill" id="saveStatus">Saved automatically</span>
+                <span class="status-pill" id="rowCount">0 entries</span>
+                <button class="status-pill install-button hidden" type="button" id="installAppButton">Install app</button>
+            </div>
+        </div>
+
+        <div class="month-controls" aria-label="Month controls">
+            <button class="icon-button" type="button" id="prevMonth" aria-label="Previous month" title="Previous month">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18L9 12l6-6"></path></svg>
+            </button>
+            <button class="month-trigger" type="button" id="monthPickerButton" aria-haspopup="dialog" aria-expanded="false">
+                <span class="month-trigger-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M3 9h18"></path><path d="M8 2v4"></path><path d="M16 2v4"></path></svg>
+                </span>
+                <span class="month-trigger-text">
+                    <span>Month</span>
+                    <span id="monthPickerLabel">This Month</span>
+                </span>
+            </button>
+            <button class="icon-button" type="button" id="nextMonth" aria-label="Next month" title="Next month">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg>
+            </button>
+        </div>
+    </header>
+
+    <section class="summary-strip" aria-label="Monthly summary">
+        <article class="metric">
+            <p class="metric-label">Income</p>
+            <p class="metric-value income-text" id="incomeTotal">Rs. 0</p>
+            <div class="metric-note" id="incomeCount">0 sources</div>
+        </article>
+
+        <article class="metric">
+            <p class="metric-label">Expenses</p>
+            <p class="metric-value expense-text" id="expenseTotal">Rs. 0</p>
+            <div class="metric-note" id="expenseCount">0 items</div>
+        </article>
+
+        <article class="metric">
+            <p class="metric-label">Remaining</p>
+            <p class="metric-value" id="balance">Rs. 0</p>
+            <div class="metric-note" id="balanceNote">No spending yet</div>
+        </article>
+
+        <article class="metric">
+            <p class="metric-label">Spent</p>
+            <p class="metric-value" id="spentRate">0%</p>
+            <div class="metric-note">of monthly income</div>
+        </article>
+    </section>
+
+    <section class="planner-grid">
+        <section class="panel" aria-labelledby="incomeHeading">
+            <div class="panel-header">
+                <h2 class="panel-title" id="incomeHeading">Income</h2>
+                <span id="incomeSectionTotal" class="section-total income-text">Rs. 0</span>
+            </div>
+            <div class="panel-body">
+                <div class="list" id="incomeList"></div>
+                <button class="add-btn add-income" type="button" id="addIncomeBtn">Add income</button>
+            </div>
+        </section>
+
+        <section class="panel" aria-labelledby="expenseHeading">
+            <div class="panel-header">
+                <h2 class="panel-title" id="expenseHeading">Expenses</h2>
+                <span id="expenseSectionTotal" class="section-total expense-text">Rs. 0</span>
+            </div>
+            <div class="panel-body">
+                <div class="list" id="debitList"></div>
+                <button class="add-btn add-expense" type="button" id="addDebitBtn">Add expense</button>
+            </div>
+        </section>
+    </section>
+
+    <section class="progress-area" aria-label="Spending progress">
+        <div class="progress-head">
+            <span>Monthly spending</span>
+            <span id="progressLabel">0% used</span>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </section>
+</main>
+
+<div class="calendar-backdrop" id="calendarBackdrop" aria-hidden="true">
+    <section class="calendar-sheet" role="dialog" aria-modal="true" aria-labelledby="calendarTitle">
+        <div class="calendar-header">
+            <div class="calendar-title">
+                <span>Select month</span>
+                <span id="calendarTitle">Calendar</span>
+            </div>
+            <div class="calendar-actions">
+                <button class="calendar-icon" type="button" id="calendarPrevYear" aria-label="Previous year" title="Previous year">&lsaquo;</button>
+                <button class="calendar-icon" type="button" id="calendarNextYear" aria-label="Next year" title="Next year">&rsaquo;</button>
+            </div>
+        </div>
+        <div class="calendar-body">
+            <div class="month-grid" id="monthGrid"></div>
+        </div>
+        <div class="calendar-footer">
+            <button class="calendar-link" type="button" id="calendarToday">Today</button>
+            <button class="calendar-link primary" type="button" id="calendarClose">Done</button>
+        </div>
+    </section>
+</div>
+
+<script>
+const storageKey = "monthlyBudgetData_v2";
+const defaultMonthKey = getCurrentMonthKey();
+let currentMonthKey = defaultMonthKey;
+let pickerYear = Number(defaultMonthKey.split("-")[0]);
+
+const currencyFormatter = new Intl.NumberFormat("en-IN", {
+    maximumFractionDigits: 0
+});
+
+const monthNames = Array.from({ length: 12 }, (_, month) => {
+    return new Date(2026, month, 1).toLocaleDateString("en-IN", { month: "short" });
+});
+
+function getCurrentMonthKey(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    return `${year}-${month}`;
+}
+
+function formatCurrency(value) {
+    return `Rs. ${currencyFormatter.format(value || 0)}`;
+}
+
+function parseAmountValue(value) {
+    const numericValue = String(value ?? "").replace(/,/g, "").replace(/[^\d.-]/g, "");
+    return Number(numericValue) || 0;
+}
+
+function formatAmountValue(value) {
+    const numericValue = parseAmountValue(value);
+    if (!numericValue && numericValue !== 0) return "";
+    return new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(numericValue);
+}
+
+function getMonthLabel(monthKey) {
+    const [year, month] = monthKey.split("-");
+    return new Date(Number(year), Number(month) - 1).toLocaleDateString("en-IN", {
+        month: "long",
+        year: "numeric"
+    });
+}
+
+function moveMonth(monthKey, offset) {
+    const [year, month] = monthKey.split("-").map(Number);
+    const date = new Date(year, month - 1 + offset, 1);
+    return getCurrentMonthKey(date);
+}
+
+function setSaveStatus(message) {
+    document.getElementById("saveStatus").textContent = message;
+}
+
+function updateMonthLabels(monthKey) {
+    const label = getMonthLabel(monthKey);
+    document.getElementById("activeMonth").textContent = label;
+    document.getElementById("monthPickerLabel").textContent = label;
+    document.getElementById("monthPickerButton").setAttribute("aria-label", `Select month, current ${label}`);
+}
+
+function renderMonthPicker() {
+    const grid = document.getElementById("monthGrid");
+    const selectedYear = Number(currentMonthKey.split("-")[0]);
+    const selectedMonth = Number(currentMonthKey.split("-")[1]);
+    const [todayYear, todayMonth] = defaultMonthKey.split("-").map(Number);
+
+    document.getElementById("calendarTitle").textContent = pickerYear;
+    grid.innerHTML = "";
+
+    monthNames.forEach((monthName, index) => {
+        const month = index + 1;
+        const monthKey = `${pickerYear}-${String(month).padStart(2, "0")}`;
+        const button = document.createElement("button");
+        button.className = "month-option";
+        button.type = "button";
+        button.textContent = monthName;
+        button.setAttribute("aria-label", getMonthLabel(monthKey));
+
+        if (pickerYear === todayYear && month === todayMonth) {
+            button.classList.add("current");
+        }
+        if (pickerYear === selectedYear && month === selectedMonth) {
+            button.classList.add("selected");
+            button.setAttribute("aria-current", "date");
+        }
+
+        button.addEventListener("click", () => {
+            switchMonth(monthKey);
+            closeCalendarPicker();
+        });
+
+        grid.appendChild(button);
+    });
+}
+
+function openCalendarPicker() {
+    pickerYear = Number(currentMonthKey.split("-")[0]);
+    renderMonthPicker();
+    document.getElementById("calendarBackdrop").classList.add("open");
+    document.body.classList.add("calendar-open");
+    document.getElementById("calendarBackdrop").setAttribute("aria-hidden", "false");
+    document.getElementById("monthPickerButton").setAttribute("aria-expanded", "true");
+    document.querySelector(".month-option.selected")?.focus();
+}
+
+function closeCalendarPicker() {
+    document.getElementById("calendarBackdrop").classList.remove("open");
+    document.body.classList.remove("calendar-open");
+    document.getElementById("calendarBackdrop").setAttribute("aria-hidden", "true");
+    document.getElementById("monthPickerButton").setAttribute("aria-expanded", "false");
+    document.getElementById("monthPickerButton").focus();
+}
+
+function saveData() {
+    const data = { income: [], expenses: [] };
+    document.querySelectorAll("#incomeList .item").forEach(item => {
+        const desc = item.querySelector(".description-input");
+        const amount = item.querySelector(".amount-input");
+        data.income.push({ desc: desc.value, amount: parseAmountValue(amount.value) });
+    });
+    document.querySelectorAll("#debitList .item").forEach(item => {
+        const desc = item.querySelector(".description-input");
+        const amount = item.querySelector(".amount-input");
+        data.expenses.push({ desc: desc.value, amount: parseAmountValue(amount.value) });
+    });
+
+    try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        const storageData = saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+        storageData[currentMonthKey] = data;
+        localStorage.setItem(storageKey, JSON.stringify(storageData));
+        setSaveStatus("Saved automatically");
+    } catch (error) {
+        setSaveStatus("Save failed");
+    }
+}
+
+function createDefaultRows(monthKey) {
+    const hasNoSavedData = monthKey === defaultMonthKey && !localStorage.getItem(storageKey);
+    if (hasNoSavedData) {
+        createRow("incomeList", "Salary", 100000);
+        createRow("debitList", "Home Loan", 30000);
+        createRow("debitList", "Car Loan", 12400);
+        createRow("debitList", "Loan from family", 12000);
+        createRow("debitList", "Grocery and Maintenance", 10000);
+        createRow("debitList", "Electricity bill", 10000);
+        createRow("debitList", "Medical expenses", 10000);
+        createRow("debitList", "Miscellaneous", 10000);
+        return;
+    }
+
+    if (!document.querySelectorAll("#incomeList .item").length) {
+        createRow("incomeList", "", 0);
+    }
+    if (!document.querySelectorAll("#debitList .item").length) {
+        createRow("debitList", "", 0);
+    }
+}
+
+function loadData(monthKey = currentMonthKey) {
+    const saved = localStorage.getItem(storageKey);
+    document.getElementById("incomeList").innerHTML = "";
+    document.getElementById("debitList").innerHTML = "";
+    currentMonthKey = monthKey;
+
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            const monthData = data[monthKey] || { income: [], expenses: [] };
+            monthData.income.forEach(item => createRow("incomeList", item.desc, item.amount));
+            monthData.expenses.forEach(item => createRow("debitList", item.desc, item.amount));
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    updateMonthLabels(monthKey);
+    pickerYear = Number(monthKey.split("-")[0]);
+    renderMonthPicker();
+    createDefaultRows(monthKey);
+    calculate();
+}
+
+function switchMonth(monthKey) {
+    saveData();
+    loadData(monthKey);
+}
+
+function createRow(containerId, name = "", amount = 0) {
+    const row = document.createElement("div");
+    row.className = "item";
+
+    const descriptionLabel = containerId === "incomeList" ? "Source" : "Expense";
+    row.innerHTML = `
+        <label class="field">
+            <span>${descriptionLabel}</span>
+            <input class="description-input" type="text" placeholder="Description" value="">
+        </label>
+        <label class="field">
+            <span>Amount</span>
+            <input class="amount-input" type="text" placeholder="Enter amount" value="" inputmode="numeric" autocomplete="off">
+        </label>
+        <button class="remove-btn" type="button" title="Remove row" aria-label="Remove row">&times;</button>
+    `;
+
+    row.querySelector(".description-input").value = name;
+    const amountInput = row.querySelector(".amount-input");
+    if (amount > 0) {
+        amountInput.value = formatAmountValue(amount);
+    }
+
+    row.querySelectorAll("input").forEach(input => {
+        input.addEventListener("input", () => {
+            if (input.classList.contains("amount-input")) {
+                input.value = formatAmountValue(input.value);
+            }
+            calculate();
+            saveData();
+        });
+    });
+
+    let startX = 0;
+    let currentX = 0;
+    let isSwiping = false;
+    const threshold = 85;
+
+    row.addEventListener("touchstart", event => {
+        startX = currentX = event.touches[0].clientX;
+        isSwiping = true;
+        row.classList.add("swiping");
+    }, { passive: true });
+
+    row.addEventListener("touchmove", event => {
+        if (!isSwiping) return;
+        currentX = event.touches[0].clientX;
+        const diff = Math.min(0, currentX - startX);
+        row.style.transform = `translateX(${diff}px)`;
+    }, { passive: true });
+
+    row.addEventListener("touchend", () => {
+        if (!isSwiping) return;
+        isSwiping = false;
+        row.classList.remove("swiping");
+        if (currentX - startX < -threshold) {
+            removeRow(row);
+        } else {
+            row.style.transition = "transform 0.25s ease";
+            row.style.transform = "translateX(0)";
+        }
+    });
+
+    row.querySelector(".remove-btn").addEventListener("click", () => removeRow(row));
+    document.getElementById(containerId).appendChild(row);
+}
+
+function removeRow(row) {
+    const list = row.parentElement;
+    if (list.querySelectorAll(".item").length === 1) {
+        row.querySelectorAll("input").forEach(input => {
+            input.value = "";
+        });
+        calculate();
+        saveData();
+        return;
+    }
+
+    row.style.opacity = "0";
+    row.style.transform = "translateX(-28px)";
+    setTimeout(() => {
+        row.remove();
+        calculate();
+        saveData();
+    }, 180);
+}
+
+function addIncome() {
+    createRow("incomeList", "", 0);
+    saveData();
+    focusLastRow("incomeList");
+}
+
+function addDebit() {
+    createRow("debitList", "", 0);
+    saveData();
+    focusLastRow("debitList");
+}
+
+function focusLastRow(containerId) {
+    const rows = document.querySelectorAll(`#${containerId} .item`);
+    const lastRow = rows[rows.length - 1];
+    if (lastRow) {
+        lastRow.querySelector(".description-input").focus();
+    }
+}
+
+function sum(containerId) {
+    let total = 0;
+    document.querySelectorAll(`#${containerId} .amount-input`).forEach(input => {
+        total += parseAmountValue(input.value);
+    });
+    return total;
+}
+
+function sumItems(items = []) {
+    const safeItems = Array.isArray(items) ? items : [];
+    return safeItems.reduce((total, item) => total + parseAmountValue(item.amount), 0);
+}
+
+function getSavedBudgetData() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+    } catch (error) {
+        return {};
+    }
+}
+
+function updateAllMonthsRemaining(currentBalance) {
+    const savedData = getSavedBudgetData();
+    let totalRemaining = currentBalance;
+
+    Object.entries(savedData).forEach(([monthKey, monthData]) => {
+        if (monthKey === currentMonthKey) return;
+        const income = sumItems(monthData.income);
+        const expense = sumItems(monthData.expenses);
+        totalRemaining += income - expense;
+    });
+
+    const totalEl = document.getElementById("allMonthsRemaining");
+    totalEl.textContent = `Total remaining: ${formatCurrency(totalRemaining)}`;
+    totalEl.classList.toggle("negative", totalRemaining < 0);
+}
+
+function filledRowCount(containerId) {
+    return Array.from(document.querySelectorAll(`#${containerId} .item`)).filter(item => {
+        const description = item.querySelector(".description-input").value.trim();
+        const amount = parseAmountValue(item.querySelector(".amount-input").value);
+        return description || amount > 0;
+    }).length;
+}
+
+function calculate() {
+    const income = sum("incomeList");
+    const expense = sum("debitList");
+    const balance = income - expense;
+    const spentPercent = income > 0 ? Math.round((expense / income) * 100) : 0;
+    const progressPercent = Math.min(spentPercent, 100);
+    const incomeRows = filledRowCount("incomeList");
+    const expenseRows = filledRowCount("debitList");
+
+    document.getElementById("incomeTotal").textContent = formatCurrency(income);
+    document.getElementById("expenseTotal").textContent = formatCurrency(expense);
+    document.getElementById("incomeSectionTotal").textContent = formatCurrency(income);
+    document.getElementById("expenseSectionTotal").textContent = formatCurrency(expense);
+    document.getElementById("incomeCount").textContent = `${incomeRows} ${incomeRows === 1 ? "source" : "sources"}`;
+    document.getElementById("expenseCount").textContent = `${expenseRows} ${expenseRows === 1 ? "item" : "items"}`;
+    document.getElementById("rowCount").textContent = `${incomeRows + expenseRows} entries`;
+
+    const balanceEl = document.getElementById("balance");
+    balanceEl.textContent = formatCurrency(balance);
+    balanceEl.className = `metric-value ${balance >= 0 ? "income-text" : "negative"}`;
+    document.getElementById("balanceNote").textContent = balance >= 0 ? "Available after expenses" : "Expenses exceed income";
+
+    document.getElementById("spentRate").textContent = `${spentPercent}%`;
+    document.getElementById("spentRate").className = `metric-value ${spentPercent > 100 ? "negative" : ""}`;
+    document.getElementById("progressLabel").textContent = `${spentPercent}% used`;
+
+    const progressFill = document.getElementById("progressFill");
+    progressFill.style.width = `${progressPercent}%`;
+    progressFill.classList.toggle("over", spentPercent > 100);
+    updateAllMonthsRemaining(balance);
+}
+
+let deferredInstallPrompt = null;
+const installButton = document.getElementById("installAppButton");
+
+function isStandaloneApp() {
+    return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+function updateInstallButton() {
+    installButton.classList.toggle("hidden", !deferredInstallPrompt || isStandaloneApp());
+}
+
+const canRegisterServiceWorker = "serviceWorker" in navigator && ["http:", "https:"].includes(window.location.protocol);
+
+if (canRegisterServiceWorker) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./monthly-expense-sw.js").catch(error => {
+            console.warn("Service worker registration failed", error);
+        });
+    });
+}
+
+window.addEventListener("beforeinstallprompt", event => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    updateInstallButton();
+});
+
+window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+    updateInstallButton();
+});
+
+installButton.addEventListener("click", async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    updateInstallButton();
+});
+
+document.getElementById("addIncomeBtn").addEventListener("click", addIncome);
+document.getElementById("addDebitBtn").addEventListener("click", addDebit);
+document.getElementById("prevMonth").addEventListener("click", () => switchMonth(moveMonth(currentMonthKey, -1)));
+document.getElementById("nextMonth").addEventListener("click", () => switchMonth(moveMonth(currentMonthKey, 1)));
+document.getElementById("monthPickerButton").addEventListener("click", openCalendarPicker);
+document.getElementById("calendarPrevYear").addEventListener("click", () => {
+    pickerYear -= 1;
+    renderMonthPicker();
+});
+document.getElementById("calendarNextYear").addEventListener("click", () => {
+    pickerYear += 1;
+    renderMonthPicker();
+});
+document.getElementById("calendarToday").addEventListener("click", () => {
+    switchMonth(defaultMonthKey);
+    closeCalendarPicker();
+});
+document.getElementById("calendarClose").addEventListener("click", closeCalendarPicker);
+document.getElementById("calendarBackdrop").addEventListener("click", event => {
+    if (event.target.id === "calendarBackdrop") {
+        closeCalendarPicker();
+    }
+});
+document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && document.getElementById("calendarBackdrop").classList.contains("open")) {
+        closeCalendarPicker();
+    }
+});
+
+renderMonthPicker();
+loadData(currentMonthKey);
+</script>
+</body>
+</html>

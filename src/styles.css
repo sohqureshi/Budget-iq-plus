@@ -1,0 +1,3 @@
+/* global styles (kept minimal since component has its own CSS) */
+html, body, app-root { height: 100%; }
+body { margin: 0; font-family: Inter, system-ui, Arial, sans-serif; background: #f4f7f3; }
