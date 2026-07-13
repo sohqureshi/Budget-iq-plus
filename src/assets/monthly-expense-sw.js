@@ -1,11 +1,11 @@
 const CACHE_NAME = "monthly-expense-planner-v2";
 const APP_SHELL = [
-  "/",
-  "/index.html",
-  "/assets/manifest.webmanifest",
-  "/icons/monthly-expense-192.png",
-  "/icons/monthly-expense-512.png",
-  "/icons/monthly-expense-maskable-512.png"
+  "./",
+  "./index.html",
+  "./assets/manifest.webmanifest",
+  "./icons/monthly-expense-192.png",
+  "./icons/monthly-expense-512.png",
+  "./icons/monthly-expense-maskable-512.png"
 ];
 
 self.addEventListener("install", event => {

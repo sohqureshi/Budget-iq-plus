@@ -92,7 +92,8 @@ export class MonthlyExpensesComponent implements OnInit, OnDestroy {
     const canRegisterServiceWorker = 'serviceWorker' in navigator && ['http:', 'https:'].includes(window.location.protocol);
     if (canRegisterServiceWorker) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/assets/monthly-expense-sw.js').catch(err => console.warn('Service worker registration failed', err));
+        const swUrl = new URL('assets/monthly-expense-sw.js', document.baseURI).toString();
+        navigator.serviceWorker.register(swUrl).catch(err => console.warn('Service worker registration failed', err));
       });
     }
   }
